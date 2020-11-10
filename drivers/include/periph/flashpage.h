@@ -84,6 +84,16 @@ extern "C" {
 #ifdef DOXYGEN
 #define FLASHPAGE_WRITE_BLOCK_ALIGNMENT
 #endif
+
+/**
+ * @brief   Return values used in this interface
+ */
+enum {
+    FLASHPAGE_OK      =  0,     /**< everything succeeded */
+    FLASHPAGE_NOMATCH = -1      /**< page differs from target data */
+};
+
+#ifndef PERIPH_FLASHPAGE_CUSTOM_PAGESIZES
 /**
  * @def FLASHPAGE_SIZE
  *
@@ -97,12 +107,17 @@ extern "C" {
 #endif
 
 /**
- * @brief   Return values used in this interface
+ * @brief   Get the page size of the given page number
+ *
+ * @param[in] page      page number to get the size for
+ *
+ * @return              Page size of the given page
  */
-enum {
-    FLASHPAGE_OK      =  0,     /**< everything succeeded */
-    FLASHPAGE_NOMATCH = -1      /**< page differs from target data */
-};
+static inline size_t flashpage_size(unsigned page)
+{
+    (void)page;
+    return FLASHPAGE_SIZE;
+}
 
 /**
  * @brief   Translate the given page number into the page's starting address
@@ -134,6 +149,15 @@ static inline unsigned flashpage_page(void *addr)
 {
     return (((intptr_t)addr - CPU_FLASH_BASE) / FLASHPAGE_SIZE);
 }
+
+#else
+
+/* Bare prototypes for the above functions. See above for the documentation */
+size_t flashpage_size(unsigned page);
+void *flashpage_addr(unsigned page);
+unsigned flashpage_page(void *addr);
+
+#endif
 
 /**
  * @brief   Erase the given page
