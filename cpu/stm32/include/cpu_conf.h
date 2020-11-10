@@ -128,7 +128,7 @@ extern "C" {
       defined(CPU_FAM_STM32F4)
 #define FLASHPAGE_BLOCK_SIZE         (4U)
 #else
-#define FLASHPAGE_WRITE_BLOCK_SIZE      (2U)
+#define FLASHPAGE_WRITE_BLOCK_SIZE   (2U)
 #endif
 
 #if defined(CPU_FAM_STM32L4) || defined(CPU_FAM_STM32WB) || \
