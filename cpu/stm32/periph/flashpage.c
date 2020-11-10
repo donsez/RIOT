@@ -49,6 +49,12 @@
 #define FLASH_CR_PER           (FLASH_NSCR_NSPER)
 #define FLASH_CR_BKER          (FLASH_NSCR_NSBKER)
 #define FLASH_CR_PG            (FLASH_NSCR_NSPG)
+#elif defined(CPU_FAM_STM32F4)
+#define FLASHPAGE_DIV          (4U)
+#define FLASH_CR_PER           (FLASH_CR_SER)
+#define FLASH_CR_PNB           (FLASH_CR_SNB)
+#define FLASH_CR_PNB_Pos       (FLASH_CR_SNB_Pos)
+#define CNTRL_REG              (FLASH->CR)
 #else
 #if defined(CPU_FAM_STM32L4) || defined(CPU_FAM_STM32WB) || \
     defined(CPU_FAM_STM32G4) || defined(CPU_FAM_STM32G0) || \
@@ -92,7 +98,7 @@ static void _erase_page(void *page_addr)
 #if defined(CPU_FAM_STM32L0) || defined(CPU_FAM_STM32L1) || \
     defined(CPU_FAM_STM32L4) || defined(CPU_FAM_STM32WB) || \
     defined(CPU_FAM_STM32G4) || defined(CPU_FAM_STM32G0) || \
-    defined(CPU_FAM_STM32L5)
+    defined(CPU_FAM_STM32L5) || defined(CPU_FAM_STM32F4)
     uint32_t *dst = page_addr;
 #else
     uint16_t *dst = page_addr;
@@ -119,7 +125,7 @@ static void _erase_page(void *page_addr)
     *dst = (uint32_t)0;
 #elif defined(CPU_FAM_STM32L4) || defined(CPU_FAM_STM32WB) || \
       defined(CPU_FAM_STM32G4) || defined(CPU_FAM_STM32G0) || \
-      defined(CPU_FAM_STM32L5)
+      defined(CPU_FAM_STM32L5) || defined(CPU_FAM_STM32F4)
     DEBUG("[flashpage] erase: setting the page address\n");
     uint8_t pn;
 #if (FLASHPAGE_NUMOF <= MAX_PAGES_PER_BANK) || defined(CPU_FAM_STM32WB)
@@ -137,6 +143,7 @@ static void _erase_page(void *page_addr)
     CNTRL_REG &= ~FLASH_CR_PNB;
     CNTRL_REG |= (uint32_t)(pn << FLASH_CR_PNB_Pos);
     CNTRL_REG |= FLASH_CR_STRT;
+    DEBUG("[flashpage] erase: the page address is set and started\n");
 #else /* CPU_FAM_STM32F0 || CPU_FAM_STM32F1 || CPU_FAM_STM32F3 */
     DEBUG("[flashpage] erase: setting the page address\n");
     FLASH->AR = (uint32_t)dst;
@@ -147,9 +154,24 @@ static void _erase_page(void *page_addr)
     /* wait as long as device is busy */
     _wait_for_pending_operations();
 
+#ifdef FLASH_ACR_DCEN
+    if (FLASH->ACR & FLASH_ACR_DCEN) {
+        FLASH->ACR &= ~FLASH_ACR_DCEN;
+        FLASH->ACR |= FLASH_ACR_DCRST;
+        FLASH->ACR |= FLASH_ACR_DCEN;
+    }
+#endif
+#ifdef FLASH_ACR_ICEN
+    if (FLASH->ACR & FLASH_ACR_ICEN) {
+        FLASH->ACR &= ~FLASH_ACR_ICEN;
+        FLASH->ACR |= FLASH_ACR_ICRST;
+        FLASH->ACR |= FLASH_ACR_ICEN;
+    }
+#endif
+
     /* reset PER bit */
     DEBUG("[flashpage] erase: resetting the page erase bit\n");
-    CNTRL_REG &= ~(FLASH_CR_PER);
+    CNTRL_REG &= ~(FLASH_CR_PER | FLASH_CR_PNB);
 
     /* lock the flash module again */
     _lock();
@@ -189,16 +211,16 @@ void flashpage_write(void *target_addr, const void *data, size_t len)
             ((unsigned)data % FLASHPAGE_WRITE_BLOCK_ALIGNMENT)));
 
     /* ensure the length doesn't exceed the actual flash size */
-    assert(((unsigned)target_addr + len) <
-           (CPU_FLASH_BASE + (FLASHPAGE_SIZE * FLASHPAGE_NUMOF)) + 1);
+    assert((uintptr_t)(target_addr + len) <
+            (uintptr_t)flashpage_addr(FLASHPAGE_NUMOF + 1));
 
-#if defined(CPU_FAM_STM32L0) || defined(CPU_FAM_STM32L1)
+#if defined(CPU_FAM_STM32L0) || defined(CPU_FAM_STM32L1) || defined(CPU_FAM_STM32F4)
     uint32_t *dst = target_addr;
     const uint32_t *data_addr = data;
 #elif defined(CPU_FAM_STM32L4) || defined(CPU_FAM_STM32WB) || \
       defined(CPU_FAM_STM32G4) || defined(CPU_FAM_STM32G0) || \
       defined(CPU_FAM_STM32L5)
-    uint64_t *dst = target_addr;
+    volatile uint64_t *dst = target_addr;
     const uint64_t *data_addr = data;
 #else
     uint16_t *dst = (uint16_t *)target_addr;
@@ -212,8 +234,23 @@ void flashpage_write(void *target_addr, const void *data, size_t len)
     stmclk_enable_hsi();
 #endif
 
+#ifdef FLASH_ACR_DCEN
+    if (FLASH->ACR & FLASH_ACR_DCEN) {
+        FLASH->ACR &= ~FLASH_ACR_DCEN;
+    }
+#endif
+#ifdef FLASH_ACR_ICEN
+    if (FLASH->ACR & FLASH_ACR_ICEN) {
+        FLASH->ACR &= ~FLASH_ACR_ICEN;
+    }
+#endif
+
     /* unlock the flash module */
     _unlock_flash();
+
+#if defined(CPU_FAM_STM32F4)
+    CNTRL_REG |= FLASH_CR_PSIZE_1; /* Word size parallelism */
+#endif
 
     /* make sure no flash operation is ongoing */
     _wait_for_pending_operations();
@@ -222,7 +259,8 @@ void flashpage_write(void *target_addr, const void *data, size_t len)
 #if defined(CPU_FAM_STM32F0) || defined(CPU_FAM_STM32F1) || \
     defined(CPU_FAM_STM32F3) || defined(CPU_FAM_STM32L4) || \
     defined(CPU_FAM_STM32WB) || defined(CPU_FAM_STM32G4) || \
-    defined(CPU_FAM_STM32G0) || defined(CPU_FAM_STM32L5)
+    defined(CPU_FAM_STM32G0) || defined(CPU_FAM_STM32L5) || \
+    defined(CPU_FAM_STM32F4)
     /* set PG bit and program page to flash */
     CNTRL_REG |= FLASH_CR_PG;
 #endif
@@ -237,13 +275,23 @@ void flashpage_write(void *target_addr, const void *data, size_t len)
 #if defined(CPU_FAM_STM32F0) || defined(CPU_FAM_STM32F1) || \
     defined(CPU_FAM_STM32F3) || defined(CPU_FAM_STM32L4) || \
     defined(CPU_FAM_STM32WB) || defined(CPU_FAM_STM32G4) || \
-    defined(CPU_FAM_STM32G0) || defined(CPU_FAM_STM32L5)
+    defined(CPU_FAM_STM32G0) || defined(CPU_FAM_STM32L5) || \
+    defined(CPU_FAM_STM32F4)
     CNTRL_REG &= ~(FLASH_CR_PG);
 #endif
     DEBUG("[flashpage_raw] write: done writing data\n");
 
     /* lock the flash module again */
     _lock();
+
+#ifdef FLASH_ACR_DCEN
+    FLASH->ACR |= FLASH_ACR_DCRST;
+    FLASH->ACR |= FLASH_ACR_DCEN;
+#endif
+#ifdef FLASH_ACR_ICEN
+    FLASH->ACR |= FLASH_ACR_ICRST;
+    FLASH->ACR |= FLASH_ACR_ICEN;
+#endif
 
 #if defined(CPU_FAM_STM32F0) || defined(CPU_FAM_STM32F1) || \
     defined(CPU_FAM_STM32F3)
@@ -253,3 +301,52 @@ void flashpage_write(void *target_addr, const void *data, size_t len)
     }
 #endif
 }
+
+#if !defined(CPU_FAM_STM32F4)
+void flashpage_write_page(unsigned page, const void *data)
+{
+    flashpage_erase(page);
+
+    /* WRITE sequence */
+    if (data != NULL) {
+        flashpage_write(flashpage_addr(page), data, FLASHPAGE_SIZE);
+    }
+}
+#endif
+
+#if defined(CPU_FAM_STM32F4)
+size_t flashpage_size(unsigned page)
+{
+    if (page < 4) {
+        return 16 * 1024;
+    }
+    else if (page == 4) {
+        return 64 * 1024;
+    }
+    else {
+        return 128 * 1024;
+    }
+}
+
+void *flashpage_addr(unsigned page)
+{
+    if (page == 0) {
+        return (void*)CPU_FLASH_BASE;
+    }
+    return (void*)((intptr_t)flashpage_addr(page - 1) + flashpage_size(page - 1));
+}
+
+unsigned flashpage_page(void *addr)
+{
+    unsigned page = (((intptr_t)addr - CPU_FLASH_BASE) / (16 * 1024));
+
+    if (page > 7) {
+        page = (page / 8) + 4;
+    }
+    else if (page > 3) {
+        page = 4;
+    }
+
+    return page;
+}
+#endif

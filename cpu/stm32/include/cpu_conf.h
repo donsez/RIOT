@@ -108,7 +108,14 @@ extern "C" {
 #define FLASHPAGE_SIZE                  (128U)
 #endif
 
+#ifdef FLASHPAGE_SIZE
 #define FLASHPAGE_NUMOF                 (STM32_FLASHSIZE / FLASHPAGE_SIZE)
+#endif
+
+#ifdef CPU_FAM_STM32F4
+#define PERIPH_FLASHPAGE_CUSTOM_PAGESIZES
+#define FLASHPAGE_NUMOF                 ((STM32_FLASHSIZE / (128U * 1024)) + 4)
+#endif
 
 /* The minimum block size which can be written depends on the family.
  * However, the erase block is always FLASHPAGE_SIZE.
@@ -116,9 +123,9 @@ extern "C" {
 #if defined(CPU_FAM_STM32L4) || defined(CPU_FAM_STM32WB) || \
     defined(CPU_FAM_STM32G4) || defined(CPU_FAM_STM32G0) || \
     defined(CPU_FAM_STM32L5)
-#define FLASHPAGE_WRITE_BLOCK_SIZE      (8U)
-#elif defined(CPU_FAM_STM32L0) || defined(CPU_FAM_STM32L1)
-#define FLASHPAGE_WRITE_BLOCK_SIZE      (4U)
+#define FLASHPAGE_BLOCK_SIZE         (8U)
+#elif defined(CPU_FAM_STM32L0) || defined(CPU_FAM_STM32L1) || defined(CPU_FAM_STM32f4)
+#define FLASHPAGE_BLOCK_SIZE         (4U)
 #else
 #define FLASHPAGE_WRITE_BLOCK_SIZE      (2U)
 #endif
