@@ -86,6 +86,17 @@ extern "C" {
 #endif
 
 /**
+ * @def     PERIPH_FLASHPAGE_CUSTOM_PAGESIZES
+ *
+ * @brief   Defined to signal that the peripheral has non-uniform flash page
+ *          sizes. These devices do not define FLASHPAGE_SIZE and do not
+ *          implement the pagewise api.
+ */
+#ifdef DOXYGEN
+#define PERIPH_FLASHPAGE_CUSTOM_PAGESIZES
+#endif
+
+/**
  * @brief   Return values used in this interface
  */
 enum {
