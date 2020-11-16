@@ -112,10 +112,34 @@ extern "C" {
 #define FLASHPAGE_NUMOF                 (STM32_FLASHSIZE / FLASHPAGE_SIZE)
 #endif
 
-#ifdef CPU_FAM_STM32F4
+#if defined(CPU_FAM_STM32F2) || defined(CPU_FAM_STM32F4) || \
+    defined(CPU_FAM_STM32F7)
 #define PERIPH_FLASHPAGE_CUSTOM_PAGESIZES
-#define FLASHPAGE_NUMOF                 ((STM32_FLASHSIZE / (128U * 1024)) + 4)
+
+/* DB1M splits the 1MB into two banks, 2MB devices are always split on stm32f4 */
+#if (defined(FLASH_OPTCR_DB1M) && (STM32_FLASHSIZE >= (1024 * 1024)))
+#define FLASHPAGE_DUAL_BANK             (1)
+#else
+#define FLASHPAGE_DUAL_BANK             (0)
 #endif
+
+/* stm32f7 uses single bank with 32KB to 256KB sectors on 2MB devices */
+#if defined(CPU_FAM_STM32F7) && (STM32_FLASHSIZE == (2048 * 2024))
+#define FLASHPAGE_MIN_SECTOR_SIZE       (32 * 1024)
+#else
+#define FLASHPAGE_MIN_SECTOR_SIZE       (16 * 1024)
+#endif
+
+#if FLASHPAGE_DUAL_BANK
+#define FLASHPAGE_NUMOF                 ((STM32_FLASHSIZE / \
+                                         (8 * FLASHPAGE_MIN_SECTOR_SIZE)) + 4)
+#else
+#define FLASHPAGE_NUMOF                 ((STM32_FLASHSIZE / \
+                                         (8 * FLASHPAGE_MIN_SECTOR_SIZE)) + 8)
+#endif
+
+#endif
+
 
 /* The minimum block size which can be written depends on the family.
  * However, the erase block is always FLASHPAGE_SIZE.
@@ -123,10 +147,11 @@ extern "C" {
 #if defined(CPU_FAM_STM32L4) || defined(CPU_FAM_STM32WB) || \
     defined(CPU_FAM_STM32G4) || defined(CPU_FAM_STM32G0) || \
     defined(CPU_FAM_STM32L5)
-#define FLASHPAGE_BLOCK_SIZE         (8U)
+#define FLASHPAGE_WRITE_BLOCK_SIZE         (8U)
 #elif defined(CPU_FAM_STM32L0) || defined(CPU_FAM_STM32L1) || \
-      defined(CPU_FAM_STM32F4)
-#define FLASHPAGE_BLOCK_SIZE         (4U)
+      defined(CPU_FAM_STM32F2) || defined(CPU_FAM_STM32F4) || \
+      defined(CPU_FAM_STM32F7)
+#define FLASHPAGE_WRITE_BLOCK_SIZE         (4U)
 #else
 #define FLASHPAGE_WRITE_BLOCK_SIZE   (2U)
 #endif

@@ -14,7 +14,8 @@ ifneq (,$(filter $(CPU_FAM),f0 f1 f3 g0 g4 l0 l1 l4 l5 wb))
   FEATURES_PROVIDED += periph_flashpage_pagewise
 endif
 
-ifneq (,$(filter $(CPU_FAM),f4))
+# The f2, f4 and f7 do not support the pagewise api
+ifneq (,$(filter $(CPU_FAM),f2 f4 f7))
   FEATURES_PROVIDED += periph_flashpage
 endif
 
