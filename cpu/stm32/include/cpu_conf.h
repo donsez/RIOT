@@ -116,7 +116,10 @@ extern "C" {
     defined(CPU_FAM_STM32F7)
 #define PERIPH_FLASHPAGE_CUSTOM_PAGESIZES
 
-/* DB1M splits the 1MB into two banks, 2MB devices are always split on stm32f4 */
+/* By default, the stm32f4 series with 1MB flash enable the DB1M flag to split
+ * the 1MB flash into two banks, 2MB devices are always split in two banks.
+ * On both the stm32f4 and the stm32f7 this can be modified with user
+ * programmable flags. Detecting the settings at runtime is not supported */
 #if (defined(FLASH_OPTCR_DB1M) && (STM32_FLASHSIZE >= (1024 * 1024)))
 #define FLASHPAGE_DUAL_BANK             (1)
 #else
@@ -147,22 +150,22 @@ extern "C" {
 #if defined(CPU_FAM_STM32L4) || defined(CPU_FAM_STM32WB) || \
     defined(CPU_FAM_STM32G4) || defined(CPU_FAM_STM32G0) || \
     defined(CPU_FAM_STM32L5)
-#define FLASHPAGE_WRITE_BLOCK_SIZE         (8U)
+#define FLASHPAGE_WRITE_BLOCK_SIZE      (8U)
 #elif defined(CPU_FAM_STM32L0) || defined(CPU_FAM_STM32L1) || \
       defined(CPU_FAM_STM32F2) || defined(CPU_FAM_STM32F4) || \
       defined(CPU_FAM_STM32F7)
-#define FLASHPAGE_WRITE_BLOCK_SIZE         (4U)
+#define FLASHPAGE_WRITE_BLOCK_SIZE      (4U)
 #else
-#define FLASHPAGE_WRITE_BLOCK_SIZE   (2U)
+#define FLASHPAGE_WRITE_BLOCK_SIZE      (2U)
 #endif
 
 #if defined(CPU_FAM_STM32L4) || defined(CPU_FAM_STM32WB) || \
     defined(CPU_FAM_STM32G4) || defined(CPU_FAM_STM32G0) || \
     defined(CPU_FAM_STM32L5)
-#define FLASHPAGE_WRITE_BLOCK_ALIGNMENT       (8U)
+#define FLASHPAGE_WRITE_BLOCK_ALIGNMENT (8U)
 #else
 /* Writing should be always 4 bytes aligned */
-#define FLASHPAGE_WRITE_BLOCK_ALIGNMENT       (4U)
+#define FLASHPAGE_WRITE_BLOCK_ALIGNMENT (4U)
 #endif
 /** @} */
 
