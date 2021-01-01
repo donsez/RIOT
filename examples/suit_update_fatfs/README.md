@@ -1,7 +1,9 @@
 # Overview
 
 This example shows how to integrate SUIT-compliant firmware updates into a
-RIOT application. It implements basic support of the SUIT architecture using
+RIOT application with firmware stored into a SDCard.
+
+It implements basic support of the SUIT architecture using
 the manifest format specified in
 [draft-ietf-suit-manifest-09](https://tools.ietf.org/id/draft-ietf-suit-manifest-09.txt).
 
@@ -14,6 +16,7 @@ Table of contents:
   - [SDCard][prerequisites-sdcard]
 - [Setup][setup]
   - [Signing key management][key-management]
+- [Tested boards and modules][tested-boards]
 - [Perform an update][update]
   - [Build and publish the firmware update][update-build-publish]
   - [Notify an update to the device][update-notify]
@@ -39,7 +42,27 @@ Table of contents:
 ### SDCard
 [prerequisites-sdcard]: #SDCard
 
-Make sure you fullfil the "Prerequisites" and "Preparing Linux" section in [README.ipv6-over-ble.md](../../pkg/nimble/README.ipv6-over-ble.md).
+Connect the [DFRobot MicroSD module](https://wiki.dfrobot.com/MicroSD_card_module_for_Arduino__SKU_DFR0229) to the Nucleo board
+```
+    SD Adapter side 		Nucleo-F411RE			Arduino pinout
+    SCK 					PA_5 (SPI1 SCLK)		D13
+    MISO 					PA_6 (SPI1 MISO)		D12
+    MOSI 					PA_7 (SPI1 MOSI)		D11
+    CS 						PB_4 (GPIO SD_CS)		D4
+    VCC 					5V						5V
+    GND 					GND						GND
+```
+
+
+## Tested boards and modules
+[tested-boards]: #TestedBoards
+
+This is the list of tested boards:
+* [x] nucleo-f411re
+* [ ] nucleo-f446re
+
+SDCard Modules
+* [DFRobot MicroSD module](https://wiki.dfrobot.com/MicroSD_card_module_for_Arduino__SKU_DFR0229)
 
 ## Setup
 [setup]: #Setup
@@ -58,6 +81,13 @@ That step can be done manually using the `suit/genkey` target.
 
 
 ## Perform an update
+
+Copy the following files MANIFEST, SLOT0.BIN, SLOT1.BIN into the FIRMWARE directory of the SDCard.
+
+Plug the SDCard into the module.
+
+Push the user button (blue one on the Nucleo board) or type the update command into the shell.
+
 
 ### Node
 
@@ -117,7 +147,7 @@ updatable RIOT image with `riotboot` or `suit/publish` make targets.
 
 This is simply done using the `suit/genkey` make target:
 
-    $ BOARD=samr21-xpro make -C examples/suit_update_fastfs suit/genkey
+    $ BOARD=nucleo-f411re make -C examples/suit_update_fastfs suit/genkey
 
 You will get this message in the terminal:
 
