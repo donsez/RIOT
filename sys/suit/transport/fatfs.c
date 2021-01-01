@@ -374,12 +374,13 @@ int suit_fatfs_get_blockwise(const char *path,
     if (res) {
     	goto out;
     }
+    DEBUG("Reading file %s (file_size=%d)\n", path, file_size);
 
     res = -1;
 
     uint32_t num_blk = get_number_of_blocks(file_size,blksize);
     for(size_t blockn = 0; blockn < num_blk; blockn++) {
-        DEBUG("reading block %u (num_blk=%ld)\n", blockn, num_blk);
+        DEBUG("Reading block %u (num_blk=%ld)\n", blockn, num_blk);
         UINT read_bytes;
         size_t offset = blockn*blksize;
         res = suit_fatfs_read(&fd, file_size, offset, blksize, buf, &read_bytes);
