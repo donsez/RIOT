@@ -42,7 +42,7 @@ Table of contents:
 ### SDCard
 [prerequisites-sdcard]: #SDCard
 
-Connect the [DFRobot MicroSD module](https://wiki.dfrobot.com/MicroSD_card_module_for_Arduino__SKU_DFR0229) to the Nucleo board
+Connect the [DFRobot MicroSD module](https://wiki.dfrobot.com/MicroSD_card_module_for_Arduino__SKU_DFR0229_) to the Nucleo board
 ```
     SD Adapter side 		Nucleo-F411RE			Arduino pinout
     SCK 					PA_5 (SPI1 SCLK)		D13
