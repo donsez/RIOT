@@ -20,7 +20,7 @@
  * @author      Kaspar Schleiser <kaspar@schleiser.de>
  * @author      Francisco Molina <francois-xavier.molina@inria.fr>
  * @author      Alexandre Abadie <alexandre.abadie@inria.fr>
- *
+ * @author      Didier Donsez <didier.donsez@univ-grenoble-alpes.fr>
  */
 
 #ifndef SUIT_TRANSPORT_FATFS_H
