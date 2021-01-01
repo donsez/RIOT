@@ -58,6 +58,8 @@ endif
 # SUIT update specific stuff
 #
 
+CFLAGS += -DLOG_LEVEL=LOG_DEBUG
+
 USEMODULE += suit suit_transport_fatfs suit_storage_flashwrite
 
 # Display a progress bar during firmware download
@@ -66,10 +68,9 @@ USEMODULE += progress_bar
 # Optional feature to trigger suit update through gpio callback
 FEATURES_OPTIONAL += periph_gpio_irq
 
-# Default COAP manifest resource location when fetched through gpio trigger
+
+# Default manifest location when fetched through gpio trigger
 CFLAGS += -DSUIT_MANIFEST_RESOURCE=\"$(MANIFEST_URL)\"
-
-
 
 # Ensure both slot bin files are always generated and linked to avoid compiling
 # during the test. This ensures that "BUILD_IN_DOCKER=1 make test"
