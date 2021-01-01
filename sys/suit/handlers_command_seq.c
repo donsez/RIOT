@@ -35,10 +35,13 @@
 #include "suit/storage.h"
 #include "suit.h"
 
-#ifdef MODULE_SUIT_TRANSPORT_COAP
+#if defined(MODULE_SUIT_TRANSPORT_COAP)
 #include "suit/transport/coap.h"
-#endif
+#elif defined(MODULE_SUIT_TRANSPORT_FATFS)
+#include "suit/transport/fatfs.h"
+#else
 #include "suit/transport/mock.h"
+#endif
 
 #include "log.h"
 
@@ -366,6 +369,13 @@ static int _dtv_fetch(suit_manifest_t *manifest, int key,
 #ifdef MODULE_SUIT_TRANSPORT_MOCK
     else if (strncmp(manifest->urlbuf, "test://", 7) == 0) {
         res = suit_transport_mock_fetch(manifest);
+    }
+#endif
+#ifdef MODULE_SUIT_TRANSPORT_FATFS
+    else if (strncmp(manifest->urlbuf, "fatfs://", 8) == 0) {
+        res = suit_fatfs_get_blockwise_url(manifest->urlbuf, FATFS_BLOCKSIZE,
+                                          suit_storage_helper,
+                                          manifest);
     }
 #endif
     else {
