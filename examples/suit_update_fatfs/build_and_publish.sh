@@ -1,6 +1,6 @@
 #!/bin/bash
 
-RIOTBASE=~/github/bergzand/RIOT
+RIOTBASE=~/github/donsez/RIOT
 EPOCH=$(date +%s)
 APP_VER=$EPOCH
 BOARD=nucleo-f411re
