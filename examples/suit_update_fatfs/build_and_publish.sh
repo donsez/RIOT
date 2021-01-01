@@ -55,10 +55,17 @@ $RIOTBASE/dist/tools/suit/suit-manifest-generator/bin/suit-tool sign \
 	 -m $BINDIR_APP/$APP_NAME-riot.suit.$APP_VER.bin \
 	 -o $BINDIR_APP/$APP_NAME-riot.suit_signed.$APP_VER.bin
 
+# Compute binary diff between slot0 and slot1 
+#cmp -l $BINDIR_APP/SLOT0.BIN $BINDIR_APP/SLOT1.BIN \
+#	| gawk '{printf "%08X %02X %02X\n", $1, strtonum(0$2), strtonum(0$3)}' >  $BINDIR_APP/SLOT1.DIF
+cmp -l $BINDIR_APP/SLOT0.BIN $BINDIR_APP/SLOT1.BIN \
+	| gawk '{printf "%06X%02X\n", $1, strtonum(0$3)}' | xxd -r -p > $BINDIR_APP/SLOT1.DIF
+
+
 # Copy the manifest and the 2 slot files into the SDCard
 cp $BINDIR_APP/$APP_NAME-riot.suit_signed.$APP_VER.bin $BINDIR_APP/MANIFEST
 
-cp $BINDIR_APP/MANIFEST $BINDIR_APP/SLOT*.BIN /Volumes/RIOTSUIT/FIRMWARE/
+cp $BINDIR_APP/MANIFEST $BINDIR_APP/SLOT*.BIN $BINDIR_APP/SLOT1.DIF /Volumes/RIOTSUIT/FIRMWARE/
 
 echo "app_name $APP_NAME" > /Volumes/RIOTSUIT/FIRMWARE/VERSION
 echo "uuid-vendor riot-os.org" >> /Volumes/RIOTSUIT/FIRMWARE/VERSION
