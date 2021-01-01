@@ -117,10 +117,6 @@ static kernel_pid_t _suit_fatfs_pid;
 #include <inttypes.h>
 #include <stdbool.h>
 
-#ifndef FATFS_READ_BUFFER_SIZE
-#define FATFS_READ_BUFFER_SIZE 512
-#endif
-
 #define TEST_FATFS_MAX_LBL_SIZE 64
 #define TEST_FATFS_MAX_VOL_STR_LEN 14 /* "-2147483648:/\0" */
 #define TEST_FATFS_FIXED_SECTOR_SIZE 512

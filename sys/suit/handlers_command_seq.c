@@ -373,7 +373,7 @@ static int _dtv_fetch(suit_manifest_t *manifest, int key,
 #endif
 #ifdef MODULE_SUIT_TRANSPORT_FATFS
     else if (strncmp(manifest->urlbuf, "fatfs://", 8) == 0) {
-        res = suit_fatfs_get_blockwise_url(manifest->urlbuf, FATFS_BLOCKSIZE,
+        res = suit_fatfs_get_blockwise_url(manifest->urlbuf, FATFS_READ_BUFFER_SIZE,
                                           suit_storage_helper,
                                           manifest);
     }

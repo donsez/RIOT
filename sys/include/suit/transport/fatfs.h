@@ -31,7 +31,9 @@
 extern "C" {
 #endif
 
-#define FATFS_BLOCKSIZE		(64)
+#ifndef FATFS_READ_BUFFER_SIZE
+#define FATFS_READ_BUFFER_SIZE		(512)
+#endif
 
 /**
  * @brief    Init the SDCard drivers
