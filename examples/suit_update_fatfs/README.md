@@ -59,7 +59,8 @@ Connect the [DFRobot MicroSD module](https://wiki.dfrobot.com/MicroSD_card_modul
 
 This is the list of tested boards:
 * [x] nucleo-f411re
-* [ ] nucleo-f446re
+* [x] nucleo-f446re
+* [ ] nucleo-f446ze
 
 SDCard Modules
 * [DFRobot MicroSD module](https://wiki.dfrobot.com/MicroSD_card_module_for_Arduino__SKU_DFR0229)
@@ -147,7 +148,7 @@ updatable RIOT image with `riotboot` or `suit/publish` make targets.
 
 This is simply done using the `suit/genkey` make target:
 
-    $ BOARD=nucleo-f411re make -C examples/suit_update_fastfs suit/genkey
+    $ BOARD=nucleo-f411re make -C examples/suit_update_fatfs suit/genkey
 
 You will get this message in the terminal:
 
